@@ -3,7 +3,7 @@ module Edgematrix
 
 using Line
 
-export Edges, addedge!, drawem!
+export Edges, transform!, addedge!, drawem!
 
 mutable struct Edges
     em::Vector{Vector{Float64}}
@@ -15,6 +15,11 @@ function addpoint!(this, data)
         push!(data, 1.0)
     end
     push!(this.em, data[1:4])
+end
+
+function transform!(this, transmatrix)
+    tmpmat = transmatrix * hcat(this.em...)
+    this.em = [tmpmat[:, i] for i in 1:size(tmpmat, 2)]
 end
 
 
