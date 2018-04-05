@@ -3,7 +3,7 @@ module Edgematrix
 
 using Line
 
-export Edges, transform!, addedge!, drawem!
+export Edges, transform!, addedge!, addcircle!, drawem!
 
 mutable struct Edges
     em::Vector{Vector{Float64}}
@@ -26,6 +26,15 @@ end
 function addedge!(this, p1, p2)
     addpoint!(this, p1)
     addpoint!(this, p2)
+end
+
+function addcircle!(this, center, radius, steps)
+    segstart = center + [radius, 0, 0]
+    for t in [i/steps for i in 1:steps]
+        segend = center + radius * [cos(2pi * t), sin(2pi * t), 0]
+        addedge!(this, segstart, segend)
+        segstart = segend
+    end
 end
 
 function drawem!(this, display, color)
