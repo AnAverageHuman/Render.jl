@@ -26,6 +26,9 @@ function parsefile(f::IOStream)
         if command == "line"
             tmp = map(x -> parse(Float64, x), splice!(items, 1:6))
             addedge!(edges, tmp[1:3], tmp[4:6])
+        elseif command == "circle"
+            tmp = map(x -> parse(Float64, x), splice!(items, 1:4))
+            addcircle!(edges, tmp[1:3], tmp[4], CIRCSTEPS)
         elseif command == "ident"
             transmat = eye(4)
         elseif command == "scale"
