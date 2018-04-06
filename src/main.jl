@@ -32,6 +32,12 @@ function parsefile(f::IOStream)
         elseif command == "circle"
             map!(parse, tmp, floats, splice!(items, 1:4))
             addcircle!(edges, tmp[1:3], tmp[4], CIRCSTEPS)
+        elseif command == "hermite"
+            map!(parse, tmp, floats, splice!(items, 1:8))
+            addcurve!(edges, tmp[1:2], tmp[3:4], tmp[5:6], tmp[7:8], HERMSTEPS, "hermite")
+        elseif command == "bezier"
+            map!(parse, tmp, floats, splice!(items, 1:8))
+            addcurve!(edges, tmp[1:2], tmp[3:4], tmp[5:6], tmp[7:8], BEZSTEPS, "bezier")
         elseif command == "ident"
             transmat = eye(4)
         elseif command == "scale"
