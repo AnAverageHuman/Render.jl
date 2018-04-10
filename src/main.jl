@@ -10,17 +10,16 @@ using Edgematrix
 using Matrixutil
 
 THEDISPLAY = zeros(Int, 3, DIMD, DIMC, DIMR)
-const edges = Edges()
-transmat = eye(4)
-
 dumpthedisplay(f) = dump_ppm(THEDISPLAY, f)
 
 function parsefile(f::IOStream)
-    global transmat, THEDISPLAY
+    global THEDISPLAY
     items = readdlm(f, String)
     items = vec(permutedims(items, (2, 1)))
     filter!(x -> x != "", items)
-    tmp = zeros(10)
+
+    edges = Edges()
+    transmat = eye(4)
 
     while ! isempty(items)
         command = shift!(items)
@@ -49,6 +48,8 @@ function parsefile(f::IOStream)
             transmat = mkrotate(parse(Float64, shift!(items)), dir) * transmat
         elseif command == "apply"
             transform!(edges, transmat)
+        elseif command == "clear"
+            edges = Edges()
         elseif command == "quit"
             break
         elseif command == "display"
