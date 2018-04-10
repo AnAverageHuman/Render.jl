@@ -4,7 +4,7 @@ module Edgematrix
 using Config
 using Line
 
-export Edges, transform!, addedge!, addcircle!, addcurve!, drawem!
+export Edges, transform!, addedge!, addbox!, addcircle!, addcurve!, drawem!
 
 mutable struct Edges
     em::Vector{Vector{Float64}}
@@ -27,6 +27,24 @@ end
 function addedge!(this, p1, p2)
     addpoint!(this, p1)
     addpoint!(this, p2)
+end
+
+function addbox!(this, tl, width, height, depth)
+    br = tl + [width, -height, -depth] # topleft, bottomright
+    addedge!(this, [tl[1], tl[2], tl[3]], [br[1], tl[2], tl[3]]); # front
+    addedge!(this, [br[1], tl[2], tl[3]], [br[1], br[2], tl[3]]);
+    addedge!(this, [br[1], br[2], tl[3]], [tl[1], br[2], tl[3]]);
+    addedge!(this, [tl[1], br[2], tl[3]], [tl[1], tl[2], tl[3]]);
+
+    addedge!(this, [tl[1], tl[2], br[3]], [br[1], tl[2], br[3]]); # back
+    addedge!(this, [br[1], tl[2], br[3]], [br[1], br[2], br[3]]);
+    addedge!(this, [br[1], br[2], br[3]], [tl[1], br[2], br[3]]);
+    addedge!(this, [tl[1], br[2], br[3]], [tl[1], tl[2], br[3]]);
+
+    addedge!(this, [tl[1], tl[2], tl[3]], [tl[1], tl[2], br[3]]); # sides
+    addedge!(this, [br[1], tl[2], tl[3]], [br[1], tl[2], br[3]]);
+    addedge!(this, [br[1], br[2], tl[3]], [br[1], br[2], br[3]]);
+    addedge!(this, [tl[1], br[2], tl[3]], [tl[1], br[2], br[3]]);
 end
 
 function addcircle!(this, center, radius, steps)
