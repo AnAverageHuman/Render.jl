@@ -4,7 +4,8 @@ module Edgematrix
 using Config
 using Line
 
-export Edges, transform!, addedge!, addbox!, addcircle!, addsphere!, addcurve!, drawem!
+export Edges, transform!, addedge!, addbox!, addcircle!, addsphere!, addtorus!, addcurve!,
+       drawem!
 
 mutable struct Edges
     em::Vector{Vector{Float64}}
@@ -63,6 +64,22 @@ function addsphere!(this, center, radius, steps)
         push!(points, center + radius * [cos(pi * cirt),
                                          sin(pi * cirt) * cos(2pi * rott),
                                          sin(pi * cirt) * sin(2pi * rott)])
+    end
+
+    for latt in 0:steps, long in 1:steps
+        i = latt * steps + long
+        addedge!(this, points[i], points[i] + 1)
+    end
+end
+
+function addtorus!(this, center, irad, orad, steps)
+    # irad: radius of a "slice"         orad: radius of the entire torus
+    points = Vector{Vector{Float64}}()
+
+    for rott in [i/steps for i in 0:steps], cirt in [i/steps for i in 0:steps]
+        push!(points, center + [cos(2pi * rott) * (irad * cos(2pi * cirt) + orad),
+                                irad * sin(2pi * cirt),
+                                -sin(2pi * rott) * (irad * cos(2pi * cirt) + orad)])
     end
 
     for latt in 0:steps, long in 1:steps
