@@ -32,6 +32,9 @@ function parsefile(f::IOStream)
         elseif command == "sphere"
             tmp = [parse(Float64, x) for x in splice!(items, 1:4)]
             addsphere!(edges, tmp[1:3], tmp[4], SPHSTEPS)
+        elseif command == "torus"
+            tmp = [parse(Float64, x) for x in splice!(items, 1:5)]
+            addtorus!(edges, tmp[1:3], tmp[4], tmp[5], TORUSTEPS)
         elseif command == "box"
             tmp = [parse(Float64, x) for x in splice!(items, 1:6)]
             addbox!(edges, tmp[1:3], tmp[4], tmp[5], tmp[6])
