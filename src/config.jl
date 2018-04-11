@@ -1,8 +1,8 @@
 __precompile__()
 module Config
 
-export MAGICNUMBER, DIMC, DIMR, DIMD, MAXCOLOR, ROTATIONINDICES, CIRCSTEPS, BEZSTEPS,
-       HERMSTEPS, CURVES
+export MAGICNUMBER, DIMC, DIMR, DIMD, MAXCOLOR, ROTATIONINDICES, CIRCSTEPS, SPHSTEPS,
+       BEZSTEPS, HERMSTEPS, CURVES
 
 const MAGICNUMBER = "P3"
 const DIMC = 500
@@ -15,6 +15,7 @@ const ROTATIONINDICES = Dict("x" => [2 2; 2 3; 3 2; 3 3],
                              "z" => [1 1; 1 2; 2 1; 2 2])
 
 const CIRCSTEPS = 360
+const SPHSTEPS  = 100
 const BEZSTEPS  = 100
 const HERMSTEPS = 100
 
