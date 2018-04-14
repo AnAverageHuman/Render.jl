@@ -5,7 +5,7 @@ using Config
 using Line
 
 export Edges, transform!, addedge!, addbox!, addcircle!, addsphere!, addtorus!, addcurve!,
-       drawem!
+       drawem!, drawpm!
 
 mutable struct Edges
     em::Vector{Vector{Float64}}
@@ -20,6 +20,7 @@ function addpoint!(this, data)
 end
 
 function transform!(this, transmatrix)
+    size(this.em, 1) < 1 && return
     tmpmat = transmatrix * hcat(this.em...)
     this.em = [tmpmat[:, i] for i in 1:size(tmpmat, 2)]
 end
@@ -30,22 +31,33 @@ function addedge!(this, p1, p2)
     addpoint!(this, p2)
 end
 
+function addpolygon!(this, p1, p2, p3)
+    addpoint!(this, p1)
+    addpoint!(this, p2)
+    addpoint!(this, p3)
+end
+
+
 function addbox!(this, tl, width, height, depth)
     br = tl + [width, -height, -depth] # topleft, bottomright
-    addedge!(this, [tl[1], tl[2], tl[3]], [br[1], tl[2], tl[3]]); # front
-    addedge!(this, [br[1], tl[2], tl[3]], [br[1], br[2], tl[3]]);
-    addedge!(this, [br[1], br[2], tl[3]], [tl[1], br[2], tl[3]]);
-    addedge!(this, [tl[1], br[2], tl[3]], [tl[1], tl[2], tl[3]]);
+    # front, back right, left, top, bottom
+    addpolygon!(this, [tl[1], tl[2], tl[3]], [br[1], br[2], tl[3]], [br[1], tl[2], tl[3]])
+    addpolygon!(this, [tl[1], tl[2], tl[3]], [tl[1], br[2], tl[3]], [br[1], br[2], tl[3]])
 
-    addedge!(this, [tl[1], tl[2], br[3]], [br[1], tl[2], br[3]]); # back
-    addedge!(this, [br[1], tl[2], br[3]], [br[1], br[2], br[3]]);
-    addedge!(this, [br[1], br[2], br[3]], [tl[1], br[2], br[3]]);
-    addedge!(this, [tl[1], br[2], br[3]], [tl[1], tl[2], br[3]]);
+    addpolygon!(this, [br[1], tl[2], br[3]], [tl[1], br[2], br[3]], [tl[1], tl[2], br[3]])
+    addpolygon!(this, [br[1], tl[2], br[3]], [br[1], br[2], br[3]], [tl[1], br[2], br[3]])
 
-    addedge!(this, [tl[1], tl[2], tl[3]], [tl[1], tl[2], br[3]]); # sides
-    addedge!(this, [br[1], tl[2], tl[3]], [br[1], tl[2], br[3]]);
-    addedge!(this, [br[1], br[2], tl[3]], [br[1], br[2], br[3]]);
-    addedge!(this, [tl[1], br[2], tl[3]], [tl[1], br[2], br[3]]);
+    addpolygon!(this, [br[1], tl[2], tl[3]], [br[1], br[2], br[3]], [br[1], tl[2], br[3]])
+    addpolygon!(this, [br[1], tl[2], tl[3]], [br[1], br[2], tl[3]], [br[1], br[2], br[3]])
+
+    addpolygon!(this, [tl[1], tl[2], br[3]], [tl[1], br[2], tl[3]], [tl[1], tl[2], tl[3]])
+    addpolygon!(this, [tl[1], tl[2], br[3]], [tl[1], br[2], br[3]], [tl[1], br[2], tl[3]])
+
+    addpolygon!(this, [tl[1], tl[2], br[3]], [br[1], tl[2], tl[3]], [br[1], tl[2], br[3]])
+    addpolygon!(this, [tl[1], tl[2], br[3]], [tl[1], tl[2], tl[3]], [br[1], tl[2], tl[3]])
+
+    addpolygon!(this, [tl[1], br[2], tl[3]], [br[1], br[2], br[3]], [br[1], br[2], tl[3]])
+    addpolygon!(this, [tl[1], br[2], tl[3]], [tl[1], br[2], br[3]], [br[1], br[2], br[3]])
 end
 
 function addcircle!(this, center, radius, steps)
@@ -108,6 +120,14 @@ function drawem!(this, display, color)
                   round.(Int, this.em[i]),
                   round.(Int, this.em[i + 1]),
                   color)
+    end
+end
+
+function drawpm!(this, display, color)
+    for i in 1:3:(size(this.em, 1) - 2)
+        drawline!(display, round.(Int, this.em[i]),     round.(Int, this.em[i + 1]), color)
+        drawline!(display, round.(Int, this.em[i + 2]), round.(Int, this.em[i + 1]), color)
+        drawline!(display, round.(Int, this.em[i]),     round.(Int, this.em[i + 2]), color)
     end
 end
 end
