@@ -19,6 +19,7 @@ function parsefile(f::IOStream)
     filter!(x -> x != "", items)
 
     edges = Edges()
+    polygons = Edges()
     transmat = eye(4)
 
     while ! isempty(items)
@@ -37,7 +38,7 @@ function parsefile(f::IOStream)
             addtorus!(edges, tmp[1:3], tmp[4], tmp[5], TORUSTEPS)
         elseif command == "box"
             tmp = [parse(Float64, x) for x in splice!(items, 1:6)]
-            addbox!(edges, tmp[1:3], tmp[4], tmp[5], tmp[6])
+            addbox!(polygons, tmp[1:3], tmp[4], tmp[5], tmp[6])
         elseif command == "hermite"
             tmp = [parse(Float64, x) for x in splice!(items, 1:8)]
             addcurve!(edges, tmp[1:2], tmp[3:4], tmp[5:6], tmp[7:8], HERMSTEPS, "hermite")
@@ -57,16 +58,20 @@ function parsefile(f::IOStream)
             transmat = mkrotate(parse(Float64, shift!(items)), dir) * transmat
         elseif command == "apply"
             transform!(edges, transmat)
+            transform!(polygons, transmat)
         elseif command == "clear"
             edges = Edges()
+            polygons = Edges()
         elseif command == "quit"
             break
         elseif command == "display"
             THEDISPLAY = zeros(THEDISPLAY)
             drawem!(edges, THEDISPLAY, [255, 255, 255])
+            drawpm!(polygons, THEDISPLAY, [255, 255, 255])
             open(dumpthedisplay, `display`, "w")
         elseif command == "save"
             drawem!(edges, THEDISPLAY, [255, 255, 255])
+            drawpm!(polygons, THEDISPLAY, [255, 255, 255])
             open(dumpthedisplay, `convert - $(shift!(items))`, "w")
         else
             warn("could not interpret ", command)
