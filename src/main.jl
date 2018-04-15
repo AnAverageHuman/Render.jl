@@ -12,6 +12,10 @@ using Matrixutil
 THEDISPLAY = zeros(Int, 3, DIMD, DIMC, DIMR)
 dumpthedisplay(f) = dump_ppm(THEDISPLAY, f)
 
+function modifystack(stack, trans)
+    push!(stack, pop!(stack) * trans)
+end
+
 function parsefile(f::IOStream)
     global THEDISPLAY
     items = readdlm(f, String)
@@ -20,6 +24,7 @@ function parsefile(f::IOStream)
 
     edges = Edges()
     polygons = Edges()
+    cs = [eye(4)]
     transmat = eye(4)
 
     while ! isempty(items)
@@ -27,51 +32,56 @@ function parsefile(f::IOStream)
         if command == "line"
             tmp = [parse(Float64, x) for x in splice!(items, 1:6)]
             addedge!(edges, tmp[1:3], tmp[4:6])
+            drawem!(edges * cs[end], THEDISPLAY, [255, 255, 255])
+            edges = Edges()
         elseif command == "circle"
             tmp = [parse(Float64, x) for x in splice!(items, 1:4)]
             addcircle!(edges, tmp[1:3], tmp[4], CIRCSTEPS)
+            drawem!(edges * cs[end], THEDISPLAY, [255, 255, 255])
+            edges = Edges()
         elseif command == "sphere"
             tmp = [parse(Float64, x) for x in splice!(items, 1:4)]
             addsphere!(polygons, tmp[1:3], tmp[4], SPHSTEPS)
+            drawpm!(polygons * cs[end], THEDISPLAY, [255, 255, 255])
+            polygons = Edges()
         elseif command == "torus"
             tmp = [parse(Float64, x) for x in splice!(items, 1:5)]
             addtorus!(polygons, tmp[1:3], tmp[4], tmp[5], TORUSTEPS)
+            drawpm!(polygons * cs[end], THEDISPLAY, [255, 255, 255])
+            polygons = Edges()
         elseif command == "box"
             tmp = [parse(Float64, x) for x in splice!(items, 1:6)]
             addbox!(polygons, tmp[1:3], tmp[4], tmp[5], tmp[6])
+            drawpm!(polygons * cs[end], THEDISPLAY, [255, 255, 255])
+            polygons = Edges()
         elseif command == "hermite"
             tmp = [parse(Float64, x) for x in splice!(items, 1:8)]
             addcurve!(edges, tmp[1:2], tmp[3:4], tmp[5:6], tmp[7:8], HERMSTEPS, "hermite")
+            drawem!(edges * cs[end], THEDISPLAY, [255, 255, 255])
+            edges = Edges()
         elseif command == "bezier"
             tmp = [parse(Float64, x) for x in splice!(items, 1:8)]
             addcurve!(edges, tmp[1:2], tmp[3:4], tmp[5:6], tmp[7:8], BEZSTEPS, "bezier")
-        elseif command == "ident"
-            transmat = eye(4)
+            drawem!(edges * cs[end], THEDISPLAY, [255, 255, 255])
+            edges = Edges()
+        elseif command == "push"
+            push!(cs, cs[end])
+        elseif command == "pop"
+            length(cs) > 1 && pop!(cs)
         elseif command == "scale"
             tmp = [parse(Float64, x) for x in splice!(items, 1:3)]
-            transmat = mkscale(tmp[1:3]) * transmat
+            modifystack(cs, mkscale(tmp[1:3]))
         elseif command == "move"
             tmp = [parse(Float64, x) for x in splice!(items, 1:3)]
-            transmat = mktranslate(tmp[1:3]) * transmat
+            modifystack(cs, mktranslate(tmp[1:3]))
         elseif command == "rotate"
             dir = shift!(items)
-            transmat = mkrotate(parse(Float64, shift!(items)), dir) * transmat
-        elseif command == "apply"
-            transform!(edges, transmat)
-            transform!(polygons, transmat)
-        elseif command == "clear"
-            edges = Edges()
-            polygons = Edges()
+            modifystack(cs, mkrotate(parse(Float64, shift!(items)), dir))
         elseif command == "quit"
             break
         elseif command == "display"
-            THEDISPLAY = zeros(THEDISPLAY)
-            drawem!(edges, THEDISPLAY, [255, 255, 255])
-            drawpm!(polygons, THEDISPLAY, [255, 255, 255])
             open(dumpthedisplay, `display`, "w")
         elseif command == "save"
-            drawem!(edges, THEDISPLAY, [255, 255, 255])
-            drawpm!(polygons, THEDISPLAY, [255, 255, 255])
             open(dumpthedisplay, `convert - $(shift!(items))`, "w")
         else
             warn("could not interpret ", command)
