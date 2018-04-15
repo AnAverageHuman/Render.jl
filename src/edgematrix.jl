@@ -97,9 +97,13 @@ function addtorus!(this, center, irad, orad, steps)
                                 -sin(2pi * rott) * (irad * cos(2pi * cirt) + orad)])
     end
 
-    for latt in 0:steps, long in 1:steps
-        i = latt * steps + long
-        addedge!(this, points[i], points[i] + 1)
+    ns = steps + 1
+    for latt in 0:steps - 1, long in 0:steps - 1
+        i = latt * ns + long
+        p = [i, i + 1, (i + 1 + ns) % ns^2, (i + ns) % ns^2] + 1
+
+        addpolygon!(this, points[p[1]], points[p[4]], points[p[3]])
+        addpolygon!(this, points[p[1]], points[p[3]], points[p[2]])
     end
 end
 
