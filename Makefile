@@ -3,7 +3,7 @@ JFLAGS := -O3 --handle-signals=no --check-bounds=no --depwarn=error
 
 SRCDIR := src
 MAIN := $(SRCDIR)/main.jl
-SCRIPT ?= scripts/04a
+SCRIPT ?= scripts/08
 
 ifneq ($(V),)
 	SHELL := sh -x
