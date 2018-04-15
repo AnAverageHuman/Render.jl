@@ -78,9 +78,12 @@ function addsphere!(this, center, radius, steps)
                                          sin(pi * cirt) * sin(2pi * rott)])
     end
 
-    for latt in 0:steps, long in 1:steps
-        i = latt * steps + long
-        addedge!(this, points[i], points[i] + 1)
+    ns = steps + 1
+    for latt in 0:steps - 1, long in 0:steps - 1
+        i = latt * ns + long
+        p = [i, i + 1, (i + 1 + ns) % length(points), (i + ns) % length(points)] + 1
+        addpolygon!(this, points[p[1]], points[p[2]], points[p[3]])
+        addpolygon!(this, points[p[1]], points[p[3]], points[p[4]])
     end
 end
 
