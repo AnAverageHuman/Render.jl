@@ -4,6 +4,8 @@ module Edgematrix
 using Config
 using Line
 
+import Base.*     # required to extend *
+
 export Edges, transform!, addedge!, addbox!, addcircle!, addsphere!, addtorus!, addcurve!,
        drawem!, drawpm!
 
@@ -11,6 +13,7 @@ mutable struct Edges
     em::Vector{Vector{Float64}}
     Edges() = new(Vector{Vector{Float64}}())
 end
+
 
 function addpoint!(this, data)
     while size(data, 1) < 4
@@ -24,6 +27,9 @@ function transform!(this, transmatrix)
     tmpmat = transmatrix * hcat(this.em...)
     this.em = [tmpmat[:, i] for i in 1:size(tmpmat, 2)]
 end
+
+*(x::Edges, y) = transform!(x, y)
+
 
 
 function addedge!(this, p1, p2)
@@ -122,21 +128,21 @@ function addcurve!(this, p1, p2, p3, p4, steps, ctype)
 end
 
 function drawem!(this, display, color)
-    for i in 1:2:(size(this.em, 1) - 1)
+    for i in 1:2:(size(this, 1) - 1)
         drawline!(display,
-                  round.(Int, this.em[i]),
-                  round.(Int, this.em[i + 1]),
+                  round.(Int, this[i]),
+                  round.(Int, this[i + 1]),
                   color)
     end
 end
 
 function drawpm!(this, display, color)
-    for i in 1:3:(size(this.em, 1) - 2)
+    for i in 1:3:(size(this, 1) - 2)
         # calculate the normal to see if we need to draw
-        cross(this.em[i + 1] - this.em[i], this.em[i + 2] - this.em[i])[3] > 0 || continue
-        drawline!(display, round.(Int, this.em[i]),     round.(Int, this.em[i + 1]), color)
-        drawline!(display, round.(Int, this.em[i + 2]), round.(Int, this.em[i + 1]), color)
-        drawline!(display, round.(Int, this.em[i]),     round.(Int, this.em[i + 2]), color)
+        cross(this[i + 1] - this[i], this[i + 2] - this[i])[3] > 0 || continue
+        drawline!(display, round.(Int, this[i]),     round.(Int, this[i + 1]), color)
+        drawline!(display, round.(Int, this[i + 2]), round.(Int, this[i + 1]), color)
+        drawline!(display, round.(Int, this[i]),     round.(Int, this[i + 2]), color)
     end
 end
 end
