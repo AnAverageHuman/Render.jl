@@ -17,7 +17,7 @@ function modifystack(stack, trans)
 end
 
 function parsefile(f::IOStream)
-    global THEDISPLAY
+    global THEDISPLAY = zeros(THEDISPLAY)
     items = readdlm(f, String)
     items = vec(permutedims(items, (2, 1)))
     filter!(x -> x != "", items)
