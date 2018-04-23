@@ -95,5 +95,5 @@ function main()
     map(x -> open(parsefile, x, "r"), ARGS)
 end
 
-main()
+isinteractive() || main()
 
