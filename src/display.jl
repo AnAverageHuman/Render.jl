@@ -3,20 +3,27 @@ module Display
 
 using Config
 
-export dump_ppm, plot!
+export IBuffer, dump_ppm, plot!
 
-function dump_ppm(data, file=STDOUT)
-    write(file, "$MAGICNUMBER $(size(data, 4)) $(size(data, 3))  $MAXCOLOR\n")
-    writedlm(file, data)
+struct IBuffer
+    disp::Array{UInt, 3}
+    zbuf::Matrix{Float64}
+    IBuffer(r::Int, c::Int) = new(zeros(3, c, r), fill(-Inf, c, r))
+end
+IBuffer() = IBuffer(DIMR, DIMC)
+
+function dump_ppm(d::IBuffer, file=STDOUT)
+    write(file, "$MAGICNUMBER $(size(d.disp, 3)) $(size(d.disp, 2))  $MAXCOLOR\n")
+    writedlm(file, d.disp)
 end
 
-function plot!(data, point, color)
+function plot!(d::IBuffer, point, color)
     # origin should be in lower left instead of upper left
-    point = point[1], point[3], size(data, 3) - point[2] - 1
-    1 < point[2] < size(data, 4) || return
-    1 < point[3] < size(data, 3) || return
+    point = point[1], point[3], size(d.disp, 2) - point[2] - 1
+    1 < point[2] < size(d.disp, 2) || return
+    1 < point[3] < size(d.disp, 3) || return
 
-    data[:, point[1], point[2], point[3]] = color
+    d.disp[:, point[2], point[3]] = color
 end
 end
 
