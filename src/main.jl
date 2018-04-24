@@ -9,7 +9,7 @@ using Display
 using Edgematrix
 using Matrixutil
 
-THEDISPLAY = zeros(Int, 3, DIMD, DIMC, DIMR)
+THEDISPLAY = nothing
 dumpthedisplay(f) = dump_ppm(THEDISPLAY, f)
 
 function modifystack(stack, trans)
@@ -17,7 +17,7 @@ function modifystack(stack, trans)
 end
 
 function parsefile(f::IOStream)
-    global THEDISPLAY = zeros(THEDISPLAY)
+    global THEDISPLAY = IBuffer()
     items = readdlm(f, String)
     items = vec(permutedims(items, (2, 1)))
     filter!(x -> x != "", items)
