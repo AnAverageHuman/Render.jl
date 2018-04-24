@@ -22,8 +22,10 @@ function plot!(d::IBuffer, point, color)
     point = point[1], point[3], size(d.disp, 2) - point[2] - 1
     1 < point[2] < size(d.disp, 2) || return
     1 < point[3] < size(d.disp, 3) || return
+    point[1] > d.zbuf[point[2], point[3]] || return
 
     d.disp[:, point[2], point[3]] = color
+    d.zbuf[point[2], point[3]] = point[1]
 end
 end
 
