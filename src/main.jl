@@ -81,6 +81,8 @@ function parsefile(f::IOStream)
             break
         elseif command == "display"
             open(dumpthedisplay, `display`, "w")
+        elseif command == "clear"
+            THEDISPLAY = IBuffer()
         elseif command == "save"
             open(dumpthedisplay, `convert - $(shift!(items))`, "w")
         else
