@@ -7,6 +7,7 @@ export drawline!
 
 function drawline!(data, p1, p2, color)
     global dx, dy, x, y
+    all(isfinite.(p1)) && all(isfinite.(p2)) || return    # refuse to draw NaN and Inf
     x = p1[1]
     y = p1[2]
     dx = p2[1] - p1[1]

@@ -137,9 +137,36 @@ function drawpm!(this, display, color)
     for i in 1:3:(size(this, 1) - 2)
         # calculate the normal to see if we need to draw
         cross(this[i + 1] - this[i], this[i + 2] - this[i])[3] > 0 || continue
-        drawline!(display, this[i],     this[i + 1], color)
-        drawline!(display, this[i + 2], this[i + 1], color)
-        drawline!(display, this[i],     this[i + 2], color)
+
+        # sort by and round y values for cleaner spheres
+        pb, pm, pt = sort(this[i:i + 2], by = x -> x[2])
+        for point in [pb, pm, pt]
+            point[2] = round(Int, point[2])
+        end
+
+        drawline!(display, pb, pm, color)
+        drawline!(display, pt, pm, color)
+        drawline!(display, pb, pt, color)
+
+        left = right = pb
+        color = rand(0:255, 3)
+
+        f(x, y) = y < 0.1 ? 0 : x / y   # avoid division by 0
+        dleft = [f(pt[1] - pb[1], pt[2] - pb[2]), 1, f(pt[3] - pb[3], pt[2] - pb[2]), 0]
+        drig1 = [f(pm[1] - pb[1], pm[2] - pb[2]), 1, f(pm[3] - pb[3], pm[2] - pb[2]), 0]
+        drig2 = [f(pt[1] - pm[1], pt[2] - pm[2]), 1, f(pm[3] - pb[3], pm[2] - pb[2]), 0]
+
+        tmp = pm[2] - pb[2]
+        for y in 1:tmp
+            drawline!(display, left + y * dleft, right + y * drig1, color)
+        end
+
+        left = left + tmp * dleft
+        right = pm
+
+        for y in 0:pt[2] - pm[2]
+            drawline!(display, left + y * dleft, right + y * drig2, color)
+        end
     end
 end
 end
