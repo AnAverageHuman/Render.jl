@@ -129,10 +129,7 @@ end
 
 function drawem!(this, display, color)
     for i in 1:2:(size(this, 1) - 1)
-        drawline!(display,
-                  round.(Int, this[i]),
-                  round.(Int, this[i + 1]),
-                  color)
+        drawline!(display, this[i], this[i + 1], color)
     end
 end
 
@@ -140,9 +137,9 @@ function drawpm!(this, display, color)
     for i in 1:3:(size(this, 1) - 2)
         # calculate the normal to see if we need to draw
         cross(this[i + 1] - this[i], this[i + 2] - this[i])[3] > 0 || continue
-        drawline!(display, round.(Int, this[i]),     round.(Int, this[i + 1]), color)
-        drawline!(display, round.(Int, this[i + 2]), round.(Int, this[i + 1]), color)
-        drawline!(display, round.(Int, this[i]),     round.(Int, this[i + 2]), color)
+        drawline!(display, this[i],     this[i + 1], color)
+        drawline!(display, this[i + 2], this[i + 1], color)
+        drawline!(display, this[i],     this[i + 2], color)
     end
 end
 end
