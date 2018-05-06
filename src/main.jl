@@ -42,17 +42,17 @@ function parsefile(f::IOStream)
         elseif command == "sphere"
             tmp = [float(x) for x in splice!(items, 1:4)]
             addsphere!(polygons, tmp[1:3], tmp[4], SPHSTEPS)
-            drawpm!(polygons * cs[end], THEDISPLAY, [255, 255, 255])
+            drawpm!(polygons * cs[end], THEDISPLAY, VIEWVEC, CAMBIENT, LIGHTS, REFLECTION)
             polygons = Edges()
         elseif command == "torus"
             tmp = [float(x) for x in splice!(items, 1:5)]
             addtorus!(polygons, tmp[1:3], tmp[4], tmp[5], TORUSTEPS)
-            drawpm!(polygons * cs[end], THEDISPLAY, [255, 255, 255])
+            drawpm!(polygons * cs[end], THEDISPLAY, VIEWVEC, CAMBIENT, LIGHTS, REFLECTION)
             polygons = Edges()
         elseif command == "box"
             tmp = [float(x) for x in splice!(items, 1:6)]
             addbox!(polygons, tmp[1:3], tmp[4], tmp[5], tmp[6])
-            drawpm!(polygons * cs[end], THEDISPLAY, [255, 255, 255])
+            drawpm!(polygons * cs[end], THEDISPLAY, VIEWVEC, CAMBIENT, LIGHTS, REFLECTION)
             polygons = Edges()
         elseif command == "hermite"
             tmp = [float(x) for x in splice!(items, 1:8)]
