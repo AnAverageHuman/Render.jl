@@ -21,6 +21,7 @@ function plot!(d::IBuffer, point, color)
     # origin should be in lower left instead of upper left
     point = point[1], point[3], size(d.disp, 2) - point[2] - 1
     point = round.(Int, point)
+    color = round.(Int, color)
 
     1 < point[2] < size(d.disp, 2) || return
     1 < point[3] < size(d.disp, 3) || return

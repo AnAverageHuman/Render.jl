@@ -1,8 +1,10 @@
 __precompile__()
 module Config
 
-export MAGICNUMBER, DIMC, DIMR, DIMD, MAXCOLOR, ROTATIONINDICES, CIRCSTEPS, SPHSTEPS,
-       TORUSTEPS, BEZSTEPS, HERMSTEPS, CURVES
+export MAGICNUMBER, DIMC, DIMR, DIMD, MAXCOLOR
+export ROTATIONINDICES
+export CIRCSTEPS, SPHSTEPS, TORUSTEPS, BEZSTEPS, HERMSTEPS, CURVES
+export CAMBIENT, LIGHTS, VIEWVEC, REFLECTION, SPEC_EXP
 
 const MAGICNUMBER = "P3"
 const DIMC = 500
@@ -22,5 +24,18 @@ const HERMSTEPS = 100
 
 const CURVES = Dict("bezier"  => [-1  3 -3  1;  3 -6  3  0; -3  3  0  0;  1  0  0  0],
                     "hermite" => [ 2 -2  1  1; -3  3 -2 -1;  0  0  1  0;  1  0  0  0])
+
+
+const CAMBIENT = [ 50,  50,  50]
+
+const LIGHTS = [Dict("location" => [0.50, 0.75, 1.00],
+                     "color"    => [  0, 255, 255])]
+
+const VIEWVEC = [ 0.00,  0.00,  1.00]
+
+const REFLECTION = Dict("ambient"  => [0.10, 0.10, 0.10],
+                        "diffuse"  => [0.50, 0.50, 0.50],
+                        "specular" => [0.50, 0.50, 0.50])
+const SPEC_EXP = 16
 end
 
