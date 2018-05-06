@@ -144,10 +144,6 @@ function drawpm!(this, display, color)
             point[2] = round(Int, point[2])
         end
 
-        drawline!(display, pb, pm, color)
-        drawline!(display, pt, pm, color)
-        drawline!(display, pb, pt, color)
-
         left = right = pb
         color = rand(0:255, 3)
 
