@@ -146,16 +146,16 @@ function drawpm!(this, display, view, cambient, lights, reflect)
         end
 
         # determine shading of a polygon
-        n, v, l = normalize.([normal, view, lights[1]["location"]]) # currently only 1 light
+        n, v = normalize(normal), normalize(view)
+        am, di, sp = cambient .* reflect["ambient"], 0, 0
 
-        am = cambient .* reflect["ambient"]
-        di = lights[1]["color"] .* reflect["diffuse"] * vecdot(n, l)
-        sp = lights[1]["color"] .* reflect["specular"] * vecdot(v, 2n * vecdot(n, l) - l)^SPEC_EXP
-        color = @parallel (+) for i in [am, di, sp]
-            max.(i, 0)
+        for lig in lights
+            l = normalize(lig["location"])
+            vnl = vecdot(n, l)
+            di += lig["color"] .* reflect["diffuse"] * vnl
+            sp += lig["color"] .* reflect["specular"] * vecdot(v, 2n * vnl - l)^SPEC_EXP
         end
-
-        color = min.(color, 255)
+        color = min.(255, sum([max.(0, i) for i in [am, di, sp]]))
 
         # fill in polygons with scanline conversion
         f(x, y) = y < 0.1 ? 0 : x / y   # avoid division by 0
