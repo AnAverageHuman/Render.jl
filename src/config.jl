@@ -28,8 +28,8 @@ const CURVES = Dict("bezier"  => [-1  3 -3  1;  3 -6  3  0; -3  3  0  0;  1  0  
 
 const CAMBIENT = [ 50,  50,  50]
 
-const LIGHTS = [Dict("location" => [0.50, 0.75, 1.00],
-                     "color"    => [  0, 255, 255])]
+const LIGHTS = [Dict("location" => [ 0.50,  0.75,  1.00], "color" => [  0, 255, 255]),
+                Dict("location" => [-0.50,  0.75,  1.00], "color" => [255,   0,   0])]
 
 const VIEWVEC = [ 0.00,  0.00,  1.00]
 
