@@ -1,5 +1,9 @@
 JC := julia
-JFLAGS := -O3 --handle-signals=no --check-bounds=no --depwarn=error
+JFLAGS := -O3 --check-bounds=no --depwarn=error
+
+ifndef TRAVIS_JULIA_VERSION
+	JFLAGS += --handle-signals=no
+endif
 
 SRCDIR := src
 BINDIR := bin
