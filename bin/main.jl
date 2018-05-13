@@ -72,7 +72,11 @@ function parsefile(f::IOStream)
         elseif command == "quit"
             break
         elseif command == "display"
-            open(dumpthedisplay, `display`, "w")
+            try
+                open(dumpthedisplay, `display`, "w")
+            catch e
+                e isa Base.UVError || rethrow()
+            end
         elseif command == "clear"
             THEDISPLAY = IBuffer()
         elseif command == "save"
