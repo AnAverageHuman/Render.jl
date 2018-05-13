@@ -1,14 +1,3 @@
-__precompile__()
-module Edgematrix
-
-using Config
-using Line
-
-import Base.*     # required to extend *
-
-export Edges, transform!, addedge!, addbox!, addcircle!, addsphere!, addtorus!, addcurve!,
-       drawem!, drawpm!
-
 mutable struct Edges
     em::Vector{Vector{Float64}}
     Edges() = new(Vector{Vector{Float64}}())
@@ -176,6 +165,5 @@ function drawpm!(this, display, view, cambient, lights, reflect)
             drawline!(display, left + y * dleft, right + y * drig2, color)
         end
     end
-end
 end
 

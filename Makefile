@@ -2,7 +2,8 @@ JC := julia
 JFLAGS := -O3 --handle-signals=no --check-bounds=no --depwarn=error
 
 SRCDIR := src
-MAIN := $(SRCDIR)/main.jl
+BINDIR := bin
+MAIN := $(BINDIR)/main.jl
 SCRIPT ?= scripts/10
 
 ifneq ($(V),)

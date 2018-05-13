@@ -1,10 +1,3 @@
-__precompile__()
-module Line
-
-using Display: plot!
-
-export drawline!
-
 function drawline!(data, p1, p2, color)
     global dx, dy, dz, x, y, z
     all(isfinite.(p1)) && all(isfinite.(p2)) || return    # refuse to draw NaN and Inf
@@ -76,6 +69,5 @@ function drawlinehigh!(data, my, color)
             d -= 2dy
         end
     end
-end
 end
 
