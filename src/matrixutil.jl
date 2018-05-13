@@ -1,10 +1,3 @@
-__precompile__()
-module Matrixutil
-
-using Config
-
-export mkscale, mktranslate, mkrotate
-
 function mkscale(scalevec)
     mult = eye(4)
     for i in 1:size(scalevec, 1)
@@ -29,6 +22,5 @@ function mkrotate(angle, direction)
         mult[indices[i, 1], indices[i, 2]] = x[i]
     end
     mult
-end
 end
 

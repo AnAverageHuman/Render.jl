@@ -1,13 +1,5 @@
-include("config.jl")
-include("display.jl")
-include("line.jl")
-include("edgematrix.jl")
-include("matrixutil.jl")
-
-using Config
-using Display
-using Edgematrix
-using Matrixutil
+isempty(@__DIR__) || push!(LOAD_PATH, "$(@__DIR__)/../src")
+using Graphics
 
 THEDISPLAY = nothing
 dumpthedisplay(f) = dump_ppm(THEDISPLAY, f)
@@ -97,5 +89,5 @@ function main()
     map(x -> open(parsefile, x, "r"), ARGS)
 end
 
-isinteractive() || main()
+isinteractive() || @time main()
 

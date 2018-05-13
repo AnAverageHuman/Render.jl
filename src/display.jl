@@ -1,10 +1,3 @@
-__precompile__()
-module Display
-
-using Config
-
-export IBuffer, dump_ppm, plot!
-
 struct IBuffer
     disp::Array{UInt, 3}
     zbuf::Matrix{Float64}
@@ -29,6 +22,5 @@ function plot!(d::IBuffer, point, color)
 
     d.disp[:, point[2], point[3]] = color
     d.zbuf[point[2], point[3]] = point[1]
-end
 end
 
