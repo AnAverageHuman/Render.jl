@@ -5,9 +5,16 @@ struct IBuffer
 end
 IBuffer() = IBuffer(DIMR, DIMC)
 
-function dump_ppm(d::IBuffer, file=STDOUT)
-    write(file, "$MAGICNUMBER $(size(d.disp, 3)) $(size(d.disp, 2))  $MAXCOLOR\n")
-    writedlm(file, d.disp)
+function dump_ppm_p3(d::IBuffer, io::IO)
+    _, w, h = size(d.disp)
+    write(io, "P3 $w $h $MAXCOLOR\n")
+    writedlm(io, d.disp)
+end
+
+function dump_ppm_p6(d::IBuffer, io::IO)
+    _, w, h = size(d.disp)
+    write(io, collect(UInt8, "P6 $w $h $MAXCOLOR\n"))
+    write(io, UInt8.(d.disp))
 end
 
 function plot!(d::IBuffer, point, color)

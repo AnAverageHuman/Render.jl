@@ -21,7 +21,8 @@ export
     VIEWVEC,
 
     # methods
-    dump_ppm,
+    dump_ppm_p3,
+    dump_ppm_p6,
 
     drawem!,
     drawpm!,
