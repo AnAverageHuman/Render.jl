@@ -1,7 +1,7 @@
 __precompile__(true)
 module Graphics
 
-import Base: *
+import Base: *, getindex, size
 
 export
     # types

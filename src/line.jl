@@ -1,4 +1,5 @@
-function drawline!(data, p1, p2, color)
+function drawline!(data::IBuffer, p1::Vector{Float64}, p2::Vector{Float64},
+                   color::Vector{Float64})
     global dx, dy, dz, x, y, z
     all(isfinite.(p1)) && all(isfinite.(p2)) || return    # refuse to draw NaN and Inf
 
@@ -24,7 +25,7 @@ function drawline!(data, p1, p2, color)
     end
 end
 
-function drawlinelow!(data, mx, color)
+function drawlinelow!(data::IBuffer, mx::Float64, color::Vector{Float64})
     global dx, dy, dz, x, y, z
     yi = 1
     if dy < 0
@@ -47,7 +48,7 @@ function drawlinelow!(data, mx, color)
     end
 end
 
-function drawlinehigh!(data, my, color)
+function drawlinehigh!(data::IBuffer, my::Float64, color::Vector{Float64})
     global dx, dy, dz, x, y, z
     xi = 1
     if dx < 0

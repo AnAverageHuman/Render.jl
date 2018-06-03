@@ -3,37 +3,42 @@ mutable struct Edges
     Edges() = new(Vector{Vector{Float64}}())
 end
 
+size(e::Edges) = size(e.em, 1)
+getindex(e::Edges, i::Union{Int,UnitRange}) = e.em[i]
 
-function addpoint!(this, data)
+
+function addpoint!(this::Edges, data::Vector{Float64})
     while size(data, 1) < 4
         push!(data, 1.0)
     end
     push!(this.em, data[1:4])
 end
 
-function transform!(this, transmatrix)
-    size(this.em, 1) < 1 && return
+function transform!(this::Edges, transmatrix::Matrix{Float64})
+    size(this) < 1 && return
     tmpmat = transmatrix * hcat(this.em...)
     this.em = [tmpmat[:, i] for i in 1:size(tmpmat, 2)]
+    this
 end
 
-*(x::Edges, y) = transform!(x, y)
+*(x::Edges, y::Matrix{Float64}) = transform!(x, y)
 
 
 
-function addedge!(this, p1, p2)
+function addedge!(this::Edges, p1::Vector{Float64}, p2::Vector{Float64})
     addpoint!(this, p1)
     addpoint!(this, p2)
 end
 
-function addpolygon!(this, p1, p2, p3)
+function addpolygon!(this::Edges, p1::Vector{Float64}, p2::Vector{Float64}, p3::Vector{Float64})
     addpoint!(this, p1)
     addpoint!(this, p2)
     addpoint!(this, p3)
 end
 
 
-function addbox!(this, tl, width, height, depth)
+function addbox!(this::Edges, tl::Vector{Float64}, width::Float64, height::Float64,
+                 depth::Float64)
     br = tl + [width, -height, -depth] # topleft, bottomright
     # front, back right, left, top, bottom
     addpolygon!(this, [tl[1], tl[2], tl[3]], [br[1], br[2], tl[3]], [br[1], tl[2], tl[3]])
@@ -55,7 +60,7 @@ function addbox!(this, tl, width, height, depth)
     addpolygon!(this, [tl[1], br[2], tl[3]], [tl[1], br[2], br[3]], [br[1], br[2], br[3]])
 end
 
-function addcircle!(this, center, radius, steps)
+function addcircle!(this::Edges, center::Vector{Float64}, radius::Float64, steps::Int)
     segstart = center + [radius, 0, 0]
     for t in [i/steps for i in 1:steps]
         segend = center + radius * [cos(2pi * t), sin(2pi * t), 0]
@@ -64,7 +69,7 @@ function addcircle!(this, center, radius, steps)
     end
 end
 
-function addsphere!(this, center, radius, steps)
+function addsphere!(this::Edges, center::Vector{Float64}, radius::Float64, steps::Int)
     points = Vector{Vector{Float64}}()
 
     for rott in [i/steps for i in 0:steps], cirt in [i/steps for i in 0:steps]
@@ -82,7 +87,8 @@ function addsphere!(this, center, radius, steps)
     end
 end
 
-function addtorus!(this, center, irad, orad, steps)
+function addtorus!(this::Edges, center::Vector{Float64}, irad::Float64, orad::Float64,
+                   steps::Int)
     # irad: radius of a "slice"         orad: radius of the entire torus
     points = Vector{Vector{Float64}}()
 
@@ -102,7 +108,8 @@ function addtorus!(this, center, irad, orad, steps)
     end
 end
 
-function addcurve!(this, p1, p2, p3, p4, steps, ctype)
+function addcurve!(this::Edges, p1::Vector{Float64}, p2::Vector{Float64},
+                   p3::Vector{Float64}, p4::Vector{Float64}, steps::Int, ctype::Symbol)
     xcoefs = CURVES[ctype] * [p1[1]; p2[1]; p3[1]; p4[1]]
     ycoefs = CURVES[ctype] * [p1[2]; p2[2]; p3[2]; p4[2]]
 
@@ -116,14 +123,16 @@ function addcurve!(this, p1, p2, p3, p4, steps, ctype)
     end
 end
 
-function drawem!(this, display, color)
-    for i in 1:2:(size(this, 1) - 1)
+function drawem!(this::Edges, display::IBuffer, color::Vector{Int})
+    for i in 1:2:(size(this) - 1)
         drawline!(display, this[i], this[i + 1], color)
     end
 end
 
-function drawpm!(this, display, view, cambient, lights, reflect)
-    for i in 1:3:(size(this, 1) - 2)
+function drawpm!(this::Edges, display::IBuffer, view::Vector{Float64},
+                 cambient::Vector{Int}, lights::Vector{Dict{Symbol, Any}},
+                 reflect::Dict{Symbol, Vector{Float64}})
+    for i in 1:3:(size(this) - 2)
         # calculate the normal to see if we need to draw
         normal = cross(this[i + 1] - this[i], this[i + 2] - this[i])
         vecdot(normal, view) > 0 || continue
@@ -136,13 +145,13 @@ function drawpm!(this, display, view, cambient, lights, reflect)
 
         # determine shading of a polygon
         n, v = normalize(normal), normalize(view)
-        am, di, sp = cambient .* reflect["ambient"], 0, 0
+        am, di, sp = cambient .* reflect[:ambient], 0, 0
 
         for lig in lights
-            l = normalize(lig["location"])
+            l = normalize(lig[:location])
             vnl = vecdot(n, l)
-            di += lig["color"] .* reflect["diffuse"] * vnl
-            sp += lig["color"] .* reflect["specular"] * vecdot(v, 2n * vnl - l)^SPEC_EXP
+            di += lig[:color] .* reflect[:diffuse] * vnl
+            sp += lig[:color] .* reflect[:specular] * vecdot(v, 2n * vnl - l)^SPEC_EXP
         end
         color = min.(255, sum([max.(0, i) for i in [am, di, sp]]))
 
