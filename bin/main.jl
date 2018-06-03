@@ -1,15 +1,15 @@
 isempty(@__DIR__) || push!(LOAD_PATH, "$(@__DIR__)/../src")
 using Graphics
 
-THEDISPLAY = nothing
-dumpthedisplay(f) = dump_ppm(THEDISPLAY, f)
 
 function modifystack(stack, trans)
     push!(stack, pop!(stack) * trans)
 end
 
 function parsefile(f::IOStream)
-    global THEDISPLAY = IBuffer()
+    THEDISPLAY = IBuffer()
+    dumpthedisplay(io::IO) = dump_ppm_p6(THEDISPLAY, io)
+
     items = readdlm(f, String)
     items = vec(permutedims(items, (2, 1)))
     filter!(x -> x != "", items)

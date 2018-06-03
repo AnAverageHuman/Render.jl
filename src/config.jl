@@ -1,4 +1,3 @@
-const MAGICNUMBER = "P3"
 const DIMC = 500
 const DIMR = 500
 const DIMD = 1
