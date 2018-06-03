@@ -1,4 +1,4 @@
-function mkscale(scalevec)
+function mkscale(scalevec::Vector{Float64})
     mult = eye(4)
     for i in 1:size(scalevec, 1)
         mult[i, i] = scalevec[i]
@@ -6,7 +6,7 @@ function mkscale(scalevec)
     mult
 end
 
-function mktranslate(transvec)
+function mktranslate(transvec::Vector{Float64})
     mult = eye(4)
     for i in 1:3
         mult[i, 4] = transvec[i]
@@ -14,7 +14,7 @@ function mktranslate(transvec)
     mult
 end
 
-function mkrotate(angle, direction)
+function mkrotate(angle::Float64, direction::Symbol)
     x = [cosd(angle), -sind(angle), sind(angle), cosd(angle)]
     indices = ROTATIONINDICES[direction]
     mult = eye(4)

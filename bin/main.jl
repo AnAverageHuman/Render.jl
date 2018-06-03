@@ -20,66 +20,66 @@ function parsefile(f::IOStream)
     transmat = eye(4)
 
     while ! isempty(items)
-        command = shift!(items)
-        if command == "line"
+        command = Symbol(shift!(items))
+        if command == :line
             tmp = [float(x) for x in splice!(items, 1:6)]
             addedge!(edges, tmp[1:3], tmp[4:6])
             drawem!(edges * cs[end], THEDISPLAY, [255, 255, 255])
             edges = Edges()
-        elseif command == "circle"
+        elseif command == :circle
             tmp = [float(x) for x in splice!(items, 1:4)]
             addcircle!(edges, tmp[1:3], tmp[4], CIRCSTEPS)
             drawem!(edges * cs[end], THEDISPLAY, [255, 255, 255])
             edges = Edges()
-        elseif command == "sphere"
+        elseif command == :sphere
             tmp = [float(x) for x in splice!(items, 1:4)]
             addsphere!(polygons, tmp[1:3], tmp[4], SPHSTEPS)
             drawpm!(polygons * cs[end], THEDISPLAY, VIEWVEC, CAMBIENT, LIGHTS, REFLECTION)
             polygons = Edges()
-        elseif command == "torus"
+        elseif command == :torus
             tmp = [float(x) for x in splice!(items, 1:5)]
             addtorus!(polygons, tmp[1:3], tmp[4], tmp[5], TORUSTEPS)
             drawpm!(polygons * cs[end], THEDISPLAY, VIEWVEC, CAMBIENT, LIGHTS, REFLECTION)
             polygons = Edges()
-        elseif command == "box"
+        elseif command == :box
             tmp = [float(x) for x in splice!(items, 1:6)]
             addbox!(polygons, tmp[1:3], tmp[4], tmp[5], tmp[6])
             drawpm!(polygons * cs[end], THEDISPLAY, VIEWVEC, CAMBIENT, LIGHTS, REFLECTION)
             polygons = Edges()
-        elseif command == "hermite"
+        elseif command == :hermite
             tmp = [float(x) for x in splice!(items, 1:8)]
-            addcurve!(edges, tmp[1:2], tmp[3:4], tmp[5:6], tmp[7:8], HERMSTEPS, "hermite")
+            addcurve!(edges, tmp[1:2], tmp[3:4], tmp[5:6], tmp[7:8], HERMSTEPS, :hermite)
             drawem!(edges * cs[end], THEDISPLAY, [255, 255, 255])
             edges = Edges()
-        elseif command == "bezier"
+        elseif command == :bezier
             tmp = [float(x) for x in splice!(items, 1:8)]
-            addcurve!(edges, tmp[1:2], tmp[3:4], tmp[5:6], tmp[7:8], BEZSTEPS, "bezier")
+            addcurve!(edges, tmp[1:2], tmp[3:4], tmp[5:6], tmp[7:8], BEZSTEPS, :bezier)
             drawem!(edges * cs[end], THEDISPLAY, [255, 255, 255])
             edges = Edges()
-        elseif command == "push"
+        elseif command == :push
             push!(cs, cs[end])
-        elseif command == "pop"
+        elseif command == :pop
             length(cs) > 1 && pop!(cs)
-        elseif command == "scale"
+        elseif command == :scale
             tmp = [float(x) for x in splice!(items, 1:3)]
             modifystack(cs, mkscale(tmp[1:3]))
-        elseif command == "move"
+        elseif command == :move
             tmp = [float(x) for x in splice!(items, 1:3)]
             modifystack(cs, mktranslate(tmp[1:3]))
-        elseif command == "rotate"
-            dir = shift!(items)
+        elseif command == :rotate
+            dir = Symbol(shift!(items))
             modifystack(cs, mkrotate(float(shift!(items)), dir))
-        elseif command == "quit"
+        elseif command == :quit
             break
-        elseif command == "display"
+        elseif command == :display
             try
                 open(dumpthedisplay, `display`, "w")
             catch e
                 e isa Base.UVError || rethrow()
             end
-        elseif command == "clear"
+        elseif command == :clear
             THEDISPLAY = IBuffer()
-        elseif command == "save"
+        elseif command == :save
             open(dumpthedisplay, `convert - $(shift!(items))`, "w")
         else
             warn("could not interpret ", command)

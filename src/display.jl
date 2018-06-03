@@ -17,7 +17,7 @@ function dump_ppm_p6(d::IBuffer, io::IO)
     write(io, UInt8.(d.disp))
 end
 
-function plot!(d::IBuffer, point, color)
+function plot!(d::IBuffer, point::Vector{Float64}, color::Vector{Float64})
     # origin should be in lower left instead of upper left
     point = point[1], point[3], size(d.disp, 2) - point[2] - 1
     point = round.(Int, point)
