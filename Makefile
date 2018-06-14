@@ -8,7 +8,7 @@ endif
 SRCDIR := src
 BINDIR := bin
 MAIN := $(BINDIR)/main.jl
-SCRIPT ?= scripts/10
+SCRIPT ?= scripts/11
 
 RDEPS := https://github.com/JuliaLang/JuliaParser.jl
 
