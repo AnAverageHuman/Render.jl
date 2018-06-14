@@ -1,6 +1,10 @@
 __precompile__(true)
 module Graphics
 
+using JuliaParser.Diagnostics: Incomplete, diag
+using JuliaParser.Lexer
+using JuliaParser.Lexer: TokenStream, eof, here
+
 import Base: *, getindex, size
 
 export
@@ -48,6 +52,13 @@ include("display.jl")
 include("line.jl")
 include("edgematrix.jl")
 include("matrixutil.jl")
+
+# parsers
+include("parser.jl")
+
+include(joinpath("langs", "mdl.jl"))
+using .mdl: mdl_parser
+
 
 Graphics
 
