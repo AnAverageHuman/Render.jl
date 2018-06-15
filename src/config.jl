@@ -29,3 +29,4 @@ const REFLECTION = Dict(:ambient  => [0.10, 0.10, 0.10],
                         :specular => [0.50, 0.50, 0.50])
 const SPEC_EXP = 16
 
+const ANIM_DELAY = 10
