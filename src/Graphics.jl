@@ -57,7 +57,7 @@ include("matrixutil.jl")
 include("parser.jl")
 
 include(joinpath("langs", "mdl.jl"))
-using .mdl: mdl_parser
+using .mdl: mdl_execute, mdl_parser
 
 
 Graphics

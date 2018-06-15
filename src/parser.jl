@@ -1,12 +1,21 @@
 #= ParseState =#
 # Makes passing everything around a bit easier.
-struct ParseState
-    display::IBuffer
-    coords::Vector{Matrix{Float64}}
-    transmat::Matrix{Float64}
-    symtab::Dict{Symbol, Any}
+struct GCommand
+    func
+    args::Vector
 end
-ParseState() = ParseState(IBuffer(), [eye(4)], eye(4), Dict())
+
+mutable struct ParseState
+    basename::AbstractString
+    cframe::Int
+    commands::Vector{GCommand}
+    coords::Vector{Matrix{Float64}}
+    display::IBuffer
+    nframes::Int
+    symtab::Dict{Symbol, Any}
+    transmat::Matrix{Float64}
+end
+ParseState() = ParseState("", 1, Vector{GCommand}(), [eye(4)], IBuffer(), 1, Dict(), eye(4))
 
 modifycoord!(ps::ParseState, trans::Matrix{Float64}) = push!(ps.coords, pop!(ps.coords) * trans)
 
@@ -29,6 +38,20 @@ display(ps::ParseState, cmd::Cmd) = begin
         e isa Base.UVError || rethrow()
     end
 end
+
+
+#= Knobs =#
+struct Knob
+    sframe::Int
+    eframe::Int
+    svalue::Float64
+    evalue::Float64
+    frdata::Vector{Float64}
+end
+Knob(sf::Int, ef::Int, sv::Float64, ev::Float64, fr::Int) = Knob(sf, ef, sv, ev, zeros(fr))
+
+getindex(k::Knob, i::Union{Int,UnitRange}) = k.frdata[i]
+
 
 # extensions to JuliaParser.Lexer
 function peekchars(io::IO, count::Int)
@@ -74,11 +97,12 @@ end
 
 
 # entry method
-function parsefile(io::IO, parser=mdl_parser)
+function parsefile(io::IO, parser=mdl_parser, execute=mdl_execute)
     ps = ParseState()
     for line in readlines(io)
         ts = TokenStream{Lexer.SourceLocToken}(line)
         parser(ts, ps)
     end
+    execute(ps)
 end
 

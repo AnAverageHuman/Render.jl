@@ -1,5 +1,5 @@
 JC := julia
-JFLAGS := -O3 --check-bounds=no --depwarn=no
+JFLAGS := -O3 --check-bounds=no --depwarn=no --procs auto
 
 ifndef TRAVIS_JULIA_VERSION
 	JFLAGS += --handle-signals=no
