@@ -5,13 +5,13 @@ using JuliaParser.Diagnostics
 using JuliaParser.Lexer
 using JuliaParser.Lexer: @tok, TokenStream, eof, eof_token, make_token, peekchar
 using JuliaParser.Tokens: ¬, √
-using Graphics
-using Graphics: GCommand, Knob, ParseState, modifycoord!, withem!, withpm!
+using Render
+using Render: ParseState, modifycoord!, withem!, withpm!
 
 export mdl_execute, mdl_parser
 
 COMMENT = "//"
-peekcomment(ts::TokenStream) = Graphics.peekcomment(ts, COMMENT)
+peekcomment(ts::TokenStream) = Render.peekcomment(ts, COMMENT)
 
 
 function next_token{T}(ts::TokenStream{T})
@@ -108,26 +108,27 @@ mdlframes(ps::ParseState, f::F64) = ps.nframes = Int(f)
 mdlvary(ps::ParseState, knob::Symbol, sf, ef, sv::F64, ev::F64) = begin
     sf = Int(sf)
     ef = Int(ef)
-    ps.symtab[knob] = get(ps.symtab, knob, Knob(sf, ef, sv, ev, ps.nframes))
+    ps.symtab[knob] = get(ps.symtab, knob, Render.Knob(sf, ef, sv, ev, ps.nframes))
     ps.symtab[knob].frdata[sf:ef - 1] = [sv + (ev - sv) / (ef - sf) * i for i in 1:(ef - sf)]
 end
 
-mdlsave(ps::ParseState, fn...) = Graphics.display(ps, `convert - $(string(fn...))`)
+mdlsave(ps::ParseState, fn...) = Render.display(ps, `convert - $(string(fn...))`)
+
 mdldisplay(ps::ParseState) = begin
     if ps.nframes > 1
-        run(`animate -delay $(Graphics.ANIM_DELAY) "$tmp/$(ps.basename)*"`)
+        run(`animate -delay $(Render.ANIM_DELAY) "$tmp/$(ps.basename)*"`)
     else
-        Graphics.display(ps, `display`)
+        Render.display(ps, `display`)
     end
 end
 
 
 function mdl_parser(ts::TokenStream, ps::ParseState)
-    Graphics.skipws_and_comments(ts, COMMENT)
+    Render.skipws_and_comments(ts, COMMENT)
     eof(ts) && return
 
     args = Vector{Any}()
-    t = Graphics.require_token(ts, next_token)
+    t = Render.require_token(ts, next_token)
     command = nothing
 
     try
@@ -141,7 +142,7 @@ function mdl_parser(ts::TokenStream, ps::ParseState)
         push!(args, ¬x isa Number ? float(¬x) : ¬x)
     end
 
-    push!(ps.commands, GCommand(command, args))
+    push!(ps.commands, Render.GCommand(command, args))
 end
 
 function mdl_execute(ps::ParseState)

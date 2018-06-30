@@ -1,5 +1,5 @@
 __precompile__(true)
-module Graphics
+module Render
 
 using JuliaParser.Diagnostics: Incomplete, diag
 using JuliaParser.Lexer
@@ -60,7 +60,7 @@ include(joinpath("langs", "mdl.jl"))
 using .mdl: mdl_execute, mdl_parser
 
 
-Graphics
+Render
 
 end
 
