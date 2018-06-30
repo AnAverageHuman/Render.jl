@@ -97,12 +97,14 @@ end
 
 
 # entry method
-function parsefile(io::IO, parser=mdl_parser, execute=mdl_execute)
+function parsefile(contents::Vector{String}, parser=mdl_parser, execute=mdl_execute)
     ps = ParseState()
-    for line in readlines(io)
+    for line in contents
         ts = TokenStream{Lexer.SourceLocToken}(line)
         parser(ts, ps)
     end
     execute(ps)
+    ps
 end
+parsefile(io::IOBuffer, p=mdl_parser, e=mdl_execute) = parsefile(readlines(io), p, e)
 
