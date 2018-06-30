@@ -171,8 +171,11 @@ function mdl_execute(ps::ParseState)
     mktempdir() do tmp
         reference = ps
         @sync @parallel for current in 1:reference.nframes
-            println("Processing frame ", current)
-            ps = deepcopy(reference)
+            if reference.nframes > 1
+                println("Processing frame ", current)
+                ps = deepcopy(reference)
+            end
+
             ps.cframe = current
             for c in ps.commands
                 c.func(ps, c.args...)
