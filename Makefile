@@ -18,11 +18,14 @@ ifneq ($(V),)
 endif
 
 
-.PHONY: all debug deps
+.PHONY: all debug interactive
 
 all: deps $(SCRIPT)
 	@$(Q)echo "  SCRIPT	$(SCRIPT)"
 	@$(JC) $(JFLAGS) $(MAIN) $(SCRIPT)
+
+interactive:
+	@$(JC) $(JFLAGS) $(MAIN)
 
 debug: JC := julia-debug
 debug: all
