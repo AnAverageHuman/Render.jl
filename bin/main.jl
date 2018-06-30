@@ -1,5 +1,5 @@
 isempty(@__DIR__) || push!(LOAD_PATH, joinpath(@__DIR__, "..", "src"))
-using Graphics: parsefile
+using Render: parsefile
 
 function main()
     # assume first argument is the filename

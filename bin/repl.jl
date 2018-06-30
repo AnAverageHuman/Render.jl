@@ -1,7 +1,5 @@
 #!/usr/bin/env julia
 using Base: LineEdit, REPL
-using Graphics: ParseState
-using JuliaParser: Lexer
 using Base.LineEdit: Prompt
 
 function stripblock(block::Vector{SubString{String}})
@@ -38,7 +36,7 @@ function RunShell(lang::AbstractString = "mdl")
     REPL.history_reset_state(hp)
     render_prompt.hist = hp
 
-    submod = getfield(Graphics, Symbol(lang))
+    submod = getfield(Render, Symbol(lang))
     parser = getfield(submod, Symbol(lang, :_parser))
     execl  = getfield(submod, Symbol(lang, :_execute))
 
@@ -47,8 +45,8 @@ function RunShell(lang::AbstractString = "mdl")
         try
             # this is awfully complicated
             toparse = String.(take!(buf) |> splitstring |> stripblock)
-            ps = Graphics.parsefile(toparse, parser, execl)
-            length(toparse) == 1 && Graphics.display(ps, `display`)
+            ps = Render.parsefile(toparse, parser, execl)
+            length(toparse) == 1 && Render.display(ps, `display`)
         catch err
             REPL.print_response(repl, err, catch_backtrace(), true, Base.have_color)
         end
