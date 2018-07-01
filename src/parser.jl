@@ -97,14 +97,18 @@ end
 
 
 # entry method
-function parsefile(contents::Vector{String}, parser=mdl_parser, execute=mdl_execute)
+function renderfile(contents::Vector{String}, lang::AbstractString="mdl")
+    submod = getfield(Render, Symbol(lang))
+    parser = getfield(submod, Symbol(lang, :_parser))
+    execl  = getfield(submod, Symbol(lang, :_execute))
+
     ps = ParseState()
     for line in contents
         ts = TokenStream{Lexer.SourceLocToken}(line)
         parser(ts, ps)
     end
-    execute(ps)
+    execl(ps)
     ps
 end
-parsefile(io::IOBuffer, p=mdl_parser, e=mdl_execute) = parsefile(readlines(io), p, e)
+renderfile(io::IO, lang::AbstractString="mdl") = renderfile(readlines(io), lang)
 

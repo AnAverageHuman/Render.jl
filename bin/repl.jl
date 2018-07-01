@@ -36,16 +36,12 @@ function RunShell(lang::AbstractString = "mdl")
     REPL.history_reset_state(hp)
     render_prompt.hist = hp
 
-    submod = getfield(Render, Symbol(lang))
-    parser = getfield(submod, Symbol(lang, :_parser))
-    execl  = getfield(submod, Symbol(lang, :_execute))
-
     render_prompt.on_done = (s, buf, ok) -> begin
         ok || return transition(s, :abort)
         try
             # this is awfully complicated
             toparse = String.(take!(buf) |> splitstring |> stripblock)
-            ps = Render.parsefile(toparse, parser, execl)
+            ps = Render.renderfile(toparse, lang)
             length(toparse) == 1 && Render.display(ps, `display`)
         catch err
             REPL.print_response(repl, err, catch_backtrace(), true, Base.have_color)
