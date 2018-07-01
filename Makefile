@@ -10,8 +10,6 @@ BINDIR := bin
 MAIN := $(BINDIR)/main.jl
 SCRIPT ?= scripts/mdl/12
 
-RDEPS := https://github.com/JuliaLang/JuliaParser.jl
-
 ifneq ($(V),)
 	SHELL := sh -x
 	Q = true ||
@@ -20,7 +18,7 @@ endif
 
 .PHONY: all debug interactive
 
-all: deps $(SCRIPT)
+all: $(SCRIPT)
 	@$(Q)echo "  SCRIPT	$(SCRIPT)"
 	@$(JC) $(JFLAGS) $(MAIN) $(SCRIPT)
 
@@ -29,7 +27,4 @@ interactive:
 
 debug: JC := julia-debug
 debug: all
-
-deps:
-	-@$(foreach pkg, $(RDEPS), $(Q)echo "  DEPENDENCY	$(pkg)"; julia $(JFLAGS) -e 'Pkg.clone("$(pkg)")')
 
