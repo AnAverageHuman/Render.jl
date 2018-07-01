@@ -8,10 +8,6 @@ using JuliaParser.Lexer: TokenStream, eof, here
 import Base: *, getindex, size
 
 export
-    # types
-    IBuffer,
-    Edges,
-
     # constants
     BEZSTEPS,
     CIRCSTEPS,
@@ -19,17 +15,9 @@ export
     SPHSTEPS,
     TORUSTEPS,
 
-    CAMBIENT,
-    LIGHTS,
-    REFLECTION,
-    VIEWVEC,
-
     # methods
     dump_ppm_p3,
     dump_ppm_p6,
-
-    drawem!,
-    drawpm!,
 
     addbox!,
     addcurve!,
