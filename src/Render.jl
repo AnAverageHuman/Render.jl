@@ -39,7 +39,9 @@ export
 
     mkrotate,
     mkscale,
-    mktranslate
+    mktranslate,
+
+    renderfile
 
 
 ### source files
