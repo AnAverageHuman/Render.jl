@@ -19,5 +19,6 @@ matrix:
   - julia: nightly
 
 script:
+  - julia -e 'Pkg.clone(pwd(), "Render"); Pkg.build("Render")'
   - make
 
