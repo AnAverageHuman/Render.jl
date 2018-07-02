@@ -132,46 +132,61 @@ end
 function drawpm!(this::Edges, display::IBuffer, view::Vector{Float64},
                  cambient::Vector{Int}, lights::Vector{Dict{Symbol, Any}},
                  reflect::Dict{Symbol, Vector{Float64}})
+    # preallocate arrays
+    v     = normalize(view)
+    n     = Vector{Float64}(3)
+    l     = Vector{Float64}(3)
+    pb    = Vector{Float64}(4)
+    pm    = Vector{Float64}(4)
+    pt    = Vector{Float64}(4)
+    color = Vector{Float64}(3)
+    dleft = Vector{Float64}(4)
+    drig1 = Vector{Float64}(4)
+    drig2 = Vector{Float64}(4)
+    tmpa  = Vector{Float64}(4)
+
+    # normalize all lights
+    for lig in lights
+        normalize!(lig[:location])
+    end
+
     for i in 1:3:(size(this) - 2)
         # calculate the normal to see if we need to draw
-        normal = cross(this[i + 1] - this[i], this[i + 2] - this[i])
-        vecdot(normal, view) > 0 || continue
+        n[1:3] = cross(this[i + 1] - this[i], this[i + 2] - this[i])
+        vecdot(n, view) > 0 || continue
 
         # sort by and round y values for cleaner spheres
-        pb, pm, pt = sort(this[i:i + 2], by = x -> x[2])
-        for point in [pb, pm, pt]
-            point[2] = round(Int, point[2])
-        end
+        pb[1:4], pm[1:4], pt[1:4] = sort(this[i:i + 2], by = x -> x[2])
+        pb[2] = round(Int, pb[2])
+        pm[2] = round(Int, pm[2])
+        pt[2] = round(Int, pt[2])
 
         # determine shading of a polygon
-        n, v = normalize(normal), normalize(view)
+        normalize!(n)
         am, di, sp = cambient .* reflect[:ambient], 0, 0
 
         for lig in lights
-            l = normalize(lig[:location])
+            l[1:3] = lig[:location]
             vnl = vecdot(n, l)
             di += lig[:color] .* reflect[:diffuse] * vnl
             sp += lig[:color] .* reflect[:specular] * vecdot(v, 2n * vnl - l)^SPEC_EXP
         end
-        color = min.(255, sum([max.(0, i) for i in [am, di, sp]]))
+        @. color[1:3] = min(255, max(0, am) + max(0, di) + max(0 + sp))
 
         # fill in polygons with scanline conversion
         f(x, y) = y < 0.1 ? 0 : x / y   # avoid division by 0
-        dleft = [f(pt[1] - pb[1], pt[2] - pb[2]), 1, f(pt[3] - pb[3], pt[2] - pb[2]), 0]
-        drig1 = [f(pm[1] - pb[1], pm[2] - pb[2]), 1, f(pm[3] - pb[3], pm[2] - pb[2]), 0]
-        drig2 = [f(pt[1] - pm[1], pt[2] - pm[2]), 1, f(pm[3] - pb[3], pm[2] - pb[2]), 0]
+        dleft[1:4] = [f(pt[1] - pb[1], pt[2] - pb[2]), 1, f(pt[3] - pb[3], pt[2] - pb[2]), 0]
+        drig1[1:4] = [f(pm[1] - pb[1], pm[2] - pb[2]), 1, f(pm[3] - pb[3], pm[2] - pb[2]), 0]
+        drig2[1:4] = [f(pt[1] - pm[1], pt[2] - pm[2]), 1, f(pm[3] - pb[3], pm[2] - pb[2]), 0]
 
-        left = right = pb
         tmp = pm[2] - pb[2]
         for y in 1:tmp
-            drawline!(display, left + y * dleft, right + y * drig1, color)
+            drawline!(display, pb + y * dleft, pb + y * drig1, color)
         end
 
-        left = left + tmp * dleft
-        right = pm
-
+        tmpa[1:4] = pb + tmp * dleft
         for y in 0:pt[2] - pm[2]
-            drawline!(display, left + y * dleft, right + y * drig2, color)
+            drawline!(display, tmpa + y * dleft, pm + y * drig2, color)
         end
     end
 end
