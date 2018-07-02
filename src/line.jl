@@ -22,9 +22,9 @@ function drawline!(data::IBuffer, p1::Vector{Float64}, p2::Vector{Float64},
 
             d = 2dy - dx
             dist = abs(mx - x)
-            dz = dist > 0 ? dz / dist : 0
+            dz = dist > 0 ? dz / dist : zero(dz)
             for i in x:mx
-                plot!(data, [z, y, i], color)
+                plot!(data, RInt[z, y, i], color)
                 d += 2dy
                 z += dz
 
@@ -50,7 +50,7 @@ function drawline!(data::IBuffer, p1::Vector{Float64}, p2::Vector{Float64},
             dz = dist > 0 ? dz / dist : zero(dz)
 
             for i in y:my
-                plot!(data, [z, i, x], color)
+                plot!(data, RInt[z, i, x], color)
                 d += 2dx
                 z += dz
 

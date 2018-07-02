@@ -4,6 +4,7 @@ module Render
 using JuliaParser.Diagnostics: Incomplete, diag
 using JuliaParser.Lexer
 using JuliaParser.Lexer: TokenStream, eof, here
+using RoundingIntegers
 
 import Base: *, getindex, size
 

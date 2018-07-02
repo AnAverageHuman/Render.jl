@@ -1,5 +1,5 @@
 struct IBuffer
-    disp::Array{UInt, 3}
+    disp::Array{RUInt, 3}
     zbuf::Matrix{Float64}
     IBuffer(r::Int, c::Int) = new(zeros(3, c, r), fill(-Inf, c, r))
 end
@@ -17,11 +17,9 @@ function dump_ppm_p6(d::IBuffer, io::IO)
     write(io, UInt8.(d.disp))
 end
 
-function plot!(d::IBuffer, point::Vector{Float64}, color::Vector{Float64})
+function plot!(d::IBuffer, point::Vector{RInt}, color::Vector{Float64})
     # origin should be in lower left instead of upper left
     point = point[1], point[3], size(d.disp, 2) - point[2] - 1
-    point = round.(Int, point)
-    color = round.(Int, color)
 
     1 < point[2] < size(d.disp, 2) || return
     1 < point[3] < size(d.disp, 3) || return
