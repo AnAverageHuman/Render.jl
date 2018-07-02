@@ -111,4 +111,5 @@ function renderfile(contents::Vector{String}, lang::AbstractString="mdl")
     ps
 end
 renderfile(io::IO, lang::AbstractString="mdl") = renderfile(readlines(io), lang)
+renderfile(file::AbstractString, lang::AbstractString="mdl") = open((io) -> renderfile(io, lang), file)
 
