@@ -1,6 +1,7 @@
 __precompile__(true)
 module Render
 
+using ElasticArrays
 using JuliaParser.Diagnostics: Incomplete, diag
 using JuliaParser.Lexer
 using JuliaParser.Lexer: TokenStream, eof, here

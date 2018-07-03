@@ -1,26 +1,24 @@
 mutable struct Edges
-    em::Vector{Vector{Float64}}
-    Edges() = new(Vector{Vector{Float64}}())
+    em::ElasticArray{Float64}
 end
+Edges() = Edges(ElasticArray{Float64}(4, 0))
 
-size(e::Edges) = size(e.em, 1)
-getindex(e::Edges, i::Union{Int,UnitRange}) = e.em[i]
+size(e::Edges) = size(e.em, 2)
+getindex(e::Edges, i::Union{Int,UnitRange}) = e.em[:, i]
 
 
 function addpoint!(this::Edges, data::Vector{Float64})
     while size(data, 1) < 4
         push!(data, 1.0)
     end
-    push!(this.em, data[1:4])
+    append!(this.em, data[1:4])
 end
 
 function transform!(this::Edges, transmatrix::Matrix{Float64})
     size(this) < 1 && return
-    tmpmat = transmatrix * hcat(this.em...)
-    this.em = [tmpmat[:, i] for i in 1:size(tmpmat, 2)]
+    this.em = transmatrix * this.em
     this
 end
-
 *(x::Edges, y::Matrix{Float64}) = transform!(x, y)
 
 
@@ -136,6 +134,7 @@ function drawpm!(this::Edges, display::IBuffer, view::Vector{Float64},
     v     = normalize(view)
     n     = Vector{Float64}(3)
     l     = Vector{Float64}(3)
+    sortd = Matrix{Float64}(4, 3)
     pb    = Vector{Float64}(4)
     pm    = Vector{Float64}(4)
     pt    = Vector{Float64}(4)
@@ -156,7 +155,8 @@ function drawpm!(this::Edges, display::IBuffer, view::Vector{Float64},
         vecdot(n, view) > 0 || continue
 
         # sort by and round y values for cleaner spheres
-        pb[1:4], pm[1:4], pt[1:4] = sort(this[i:i + 2], by = x -> x[2])
+        sortd[:, :] = sortcols(this[i:i + 2], by = x -> x[2])
+        pb[1:4], pm[1:4], pt[1:4] = [sortd[:, i] for i in 1:size(sortd, 2)]
         pb[2] = round(Int, pb[2])
         pm[2] = round(Int, pm[2])
         pt[2] = round(Int, pt[2])
