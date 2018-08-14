@@ -1,9 +1,11 @@
 __precompile__(true)
 module Render
 
-using JuliaParser.Diagnostics: Incomplete, diag
-using JuliaParser.Lexer
-using JuliaParser.Lexer: TokenStream, eof, here
+using DelimitedFiles: writedlm
+using FilePaths: AbstractPath
+using LinearAlgebra
+using Tokenize: tokenize, untokenize
+using Tokenize.Tokens: Token, kind, FLOAT, INTEGER
 using RoundingIntegers
 
 import Base: *, getindex, size

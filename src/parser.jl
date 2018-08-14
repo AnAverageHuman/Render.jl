@@ -15,7 +15,7 @@ mutable struct ParseState
     symtab::Dict{Symbol, Any}
     transmat::Matrix{Float64}
 end
-ParseState() = ParseState("", 1, Vector{GCommand}(), [eye(4)], IBuffer(), 1, Dict(), eye(4))
+ParseState() = ParseState("", 1, Vector{GCommand}(), [Matrix(1.0I, 4, 4)], IBuffer(), 1, Dict(), Matrix(1.0I, 4, 4))
 
 modifycoord!(ps::ParseState, trans::Matrix{Float64}) = push!(ps.coords, pop!(ps.coords) * trans)
 
@@ -35,7 +35,7 @@ display(ps::ParseState, cmd::Cmd) = begin
     try
         open(io::IO -> dump_ppm_p6(ps.display, io), cmd, "w")
     catch e
-        e isa Base.UVError || rethrow()
+        e isa Base.IOError || rethrow()
     end
 end
 
@@ -53,63 +53,25 @@ Knob(sf::Int, ef::Int, sv::Float64, ev::Float64, fr::Int) = Knob(sf, ef, sv, ev,
 getindex(k::Knob, i::Union{Int,UnitRange}) = k.frdata[i]
 
 
-# extensions to JuliaParser.Lexer
-function peekchars(io::IO, count::Int)
-    mark(io)
-    ret = String(read(io, count))
-    reset(io)
-    return ret
+#= Miscellaneous =#
+function parseNumber(tok::Token)
+    return parse(Float64, untokenize(tok))
+    #kind(tok) === INTEGER && return parse(Int, untokenize(tok))
+    #kind(tok) === FLOAT && return parse(Float64, untokenize(tok))
 end
-peekchars(ts::TokenStream, count::Int) = peekchars(ts.io, count)
-
-peekcomment(ts::TokenStream, cm::AbstractString) = peekchars(ts, length(cm)) == cm
-
-function skipcomment(ts::TokenStream, cm::AbstractString)
-    @assert peekcomment(ts, cm)
-    Lexer.skip_to_eol(ts)
-end
-
-function skipws_and_comments(ts::TokenStream, cm::AbstractString)
-    while ! eof(ts)
-        Lexer.skipws(ts, true)
-        peekcomment(ts, cm) || break
-        skipcomment(ts, cm)
-    end
-end
-
-function require_token(ts::TokenStream, nextt=Lexer.next_token)
-    if ts.putback !== nothing
-        t = ts.putback
-    elseif ts.lasttoken !== nothing
-        t = ts.lasttoken
-    else
-        t = nextt(ts)
-    end
-    eof(t) && throw(Incomplete(:other, diag(here(ts), "incomplete: premature end of input")))
-    while Lexer.isnewline(t)
-        Lexer.take_token(ts)
-        t = nextt(ts)
-    end
-    eof(t) && throw(Incomplete(:other, diag(here(ts), "incomplete: premature end of input")))
-    ts.putback === nothing && Lexer.set_token!(ts, t)
-    return t
-end
-
 
 # entry method
-function renderfile(contents::Vector{String}, lang::AbstractString="mdl")
+function renderfile(contents, lang::AbstractString="mdl")
     submod = getfield(Render, Symbol(lang))
     parser = getfield(submod, Symbol(lang, :_parser))
     execl  = getfield(submod, Symbol(lang, :_execute))
 
     ps = ParseState()
-    for line in contents
-        ts = TokenStream{Lexer.SourceLocToken}(line)
-        parser(ts, ps)
-    end
+    ts = tokenize(contents)
+    parser(ts, ps)
     execl(ps)
     ps
 end
-renderfile(io::IO, lang::AbstractString="mdl") = renderfile(readlines(io), lang)
-renderfile(file::AbstractString, lang::AbstractString="mdl") = open((io) -> renderfile(io, lang), file)
+renderfile(io::IO, lang::AbstractString="mdl") = renderfile(read(io, String), lang)
+renderfile(f::AbstractPath, lang::AbstractString="mdl") = open((io) -> renderfile(io, lang), f)
 

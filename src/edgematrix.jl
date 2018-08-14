@@ -81,7 +81,7 @@ function addsphere!(this::Edges, center::Vector{Float64}, radius::Float64, steps
     ns = steps + 1
     for latt in 0:steps - 1, long in 0:steps - 1
         i = latt * ns + long
-        p = [i, i + 1, (i + 1 + ns) % length(points), (i + ns) % length(points)] + 1
+        p = [i, i + 1, (i + 1 + ns) % length(points), (i + ns) % length(points)] .+ 1
         addpolygon!(this, points[p[1]], points[p[2]], points[p[3]])
         addpolygon!(this, points[p[1]], points[p[3]], points[p[4]])
     end
@@ -130,20 +130,20 @@ function drawem!(this::Edges, display::IBuffer, color::Vector{Int})
 end
 
 function drawpm!(this::Edges, display::IBuffer, view::Vector{Float64},
-                 cambient::Vector{Int}, lights::Vector{Dict{Symbol, Any}},
+                 cambient::Vector{Int}, lights::Vector{Dict{Symbol, Vector{T} where T}},
                  reflect::Dict{Symbol, Vector{Float64}})
     # preallocate arrays
     v     = normalize(view)
-    n     = Vector{Float64}(3)
-    l     = Vector{Float64}(3)
-    pb    = Vector{Float64}(4)
-    pm    = Vector{Float64}(4)
-    pt    = Vector{Float64}(4)
-    color = Vector{Float64}(3)
-    dleft = Vector{Float64}(4)
-    drig1 = Vector{Float64}(4)
-    drig2 = Vector{Float64}(4)
-    tmpa  = Vector{Float64}(4)
+    n     = Vector{Float64}(undef, 3)
+    l     = Vector{Float64}(undef, 3)
+    pb    = Vector{Float64}(undef, 4)
+    pm    = Vector{Float64}(undef, 4)
+    pt    = Vector{Float64}(undef, 4)
+    color = Vector{Float64}(undef, 3)
+    dleft = Vector{Float64}(undef, 4)
+    drig1 = Vector{Float64}(undef, 4)
+    drig2 = Vector{Float64}(undef, 4)
+    tmpa  = Vector{Float64}(undef, 4)
 
     # normalize all lights
     for lig in lights
@@ -152,8 +152,8 @@ function drawpm!(this::Edges, display::IBuffer, view::Vector{Float64},
 
     for i in 1:3:(size(this) - 2)
         # calculate the normal to see if we need to draw
-        n[1:3] = cross(this[i + 1] - this[i], this[i + 2] - this[i])
-        vecdot(n, view) > 0 || continue
+        n[1:3] = cross((this[i + 1] - this[i])[1:3], (this[i + 2] - this[i])[1:3])
+        dot(n, view) > 0 || continue
 
         # sort by and round y values for cleaner spheres
         pb[1:4], pm[1:4], pt[1:4] = sort(this[i:i + 2], by = x -> x[2])
@@ -167,9 +167,9 @@ function drawpm!(this::Edges, display::IBuffer, view::Vector{Float64},
 
         for lig in lights
             l[1:3] = lig[:location]
-            vnl = vecdot(n, l)
+            vnl = dot(n, l)
             di += lig[:color] .* reflect[:diffuse] * vnl
-            sp += lig[:color] .* reflect[:specular] * vecdot(v, 2n * vnl - l)^SPEC_EXP
+            sp += lig[:color] .* reflect[:specular] * dot(v, 2n * vnl - l)^SPEC_EXP
         end
         @. color[1:3] = min(255, max(0, am) + max(0, di) + max(0 + sp))
 

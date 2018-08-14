@@ -1,61 +1,16 @@
 __precompile__(true)
 module mdl
 
-using JuliaParser.Diagnostics
-using JuliaParser.Lexer
-using JuliaParser.Lexer: @tok, TokenStream, eof, eof_token, make_token, peekchar
-using JuliaParser.Tokens: ¬, √
+using Distributed: @distributed
+using Tokenize: Lexers.Lexer, untokenize
+using Tokenize.Tokens: kind, startpos, ENDMARKER, FLOAT, INTEGER
 using Render
-using Render: ParseState, modifycoord!, withem!, withpm!
+using Render: ParseState, modifycoord!, parseNumber, withem!, withpm!
 
 export mdl_execute, mdl_parser
 
 COMMENT = "//"
-peekcomment(ts::TokenStream) = Render.peekcomment(ts, COMMENT)
 
-
-function next_token{T}(ts::TokenStream{T})
-    ts.ateof && return eof_token(ts)
-    tmp = Lexer.skipws(ts, false)
-    eof(ts) && return eof_token(ts)
-    ts.isspace = tmp
-
-    while ! eof(ts)
-        peekcomment(ts) && skipcomment(ts, COMMENT)
-        c = peekchar(ts)
-        if eof(c)
-            ts.ateof = true
-            return eof_token(T)
-        elseif c === ' ' || c === '\t'
-            Lexer.skip(ts, 1)
-            continue
-        elseif c == '\r'
-            Lexer.skip(ts, 1)
-            peekchar(ts) === '\n' || throw(Lexer.here(ts),
-                                           "'\\r' not followed by '\\n' is invalid")
-            continue
-        elseif Lexer.isnewline(c)
-            return @tok Lexer.readchar(ts)
-        elseif isdigit(c)
-            return Lexer.read_number(ts, false, false)
-        elseif c === '-'
-            Lexer.skip(ts, 1)
-            d = peekchar(ts)
-            return isdigit(d) ? Lexer.read_number(ts, d === '.', true) : @tok :(-)
-        elseif c === '.'
-            Lexer.skip(ts, 1)
-            return isdigit(peekchar(ts)) ? Lexer.read_number(ts, true, false) : @tok :(.)
-        elseif Lexer.is_identifier_start_char(c)
-            return @tok Lexer.accum_julia_symbol(ts, c)
-        else
-            @assert Lexer.readchar(ts) === c
-            throw(Diagnostics.diag(Lexer.here(ts), "invalid character \"$c\""))
-        end
-    end
-
-    ts.ateof = true
-    return eof_token(ts)
-end
 
 # simple substitution
 const F64 = Float64
@@ -123,26 +78,62 @@ mdldisplay(ps::ParseState) = begin
 end
 
 
-function mdl_parser(ts::TokenStream, ps::ParseState)
-    Render.skipws_and_comments(ts, COMMENT)
-    eof(ts) && return
+function mdl_parser(ts::Lexer, ps::ParseState)
+    next = iterate(ts)
 
-    args = Vector{Any}()
-    t = Render.require_token(ts, next_token)
-    command = nothing
+    while next !== nothing
+        (tok, state) = next
 
-    try
-        command = getfield(mdl, Symbol(:mdl, ¬t))
-    catch UndefVarError
-        error("$(¬t) is not a valid MDL command")
+        kind(tok) === ENDMARKER && break
+
+        if untokenize(tok) === "\n"
+            next = iterate(ts, state)
+            continue
+        end
+
+        if untokenize(tok) == COMMENT
+            while untokenize(tok) !== "\n"
+                next = iterate(ts, state)
+                if next !== nothing
+                    (tok, state) = next
+                else
+                    continue
+                end
+            end
+            continue
+        end
+
+        command = untokenize(tok)
+        try
+            command = getfield(mdl, Symbol(:mdl, command))
+        catch UndefVarError
+            error("at $(startpos(tok)): expected MDL command, got [$(command)]")
+        end
+        next = iterate(ts, state)
+
+        args = Vector()
+        while next !== nothing
+            (tok, state) = next
+            tokkind = kind(tok)
+            t = untokenize(tok)
+            t === "\n" && break
+
+            if t === "-"    # we expect a number here
+                next = iterate(ts, state)
+                (tok, state) = next
+                val = parseNumber(tok)
+                push!(args, -val)
+            elseif tokkind === INTEGER || tokkind === FLOAT
+                push!(args, parseNumber(tok))
+            elseif t !== " "
+                push!(args, Symbol(t))
+            end
+
+            next = iterate(ts, state)
+        end
+
+        push!(ps.commands, Render.GCommand(command, args))
     end
-
-    while ! eof(ts)
-        x = next_token(ts)
-        push!(args, ¬x isa Number ? float(¬x) : ¬x)
-    end
-
-    push!(ps.commands, Render.GCommand(command, args))
 end
 
 function mdl_execute(ps::ParseState)
@@ -171,7 +162,7 @@ function mdl_execute(ps::ParseState)
 
     mktempdir() do tmp
         reference = ps
-        @sync @parallel for current in 1:reference.nframes
+        @sync @distributed for current in 1:reference.nframes
             if reference.nframes > 1
                 println("Processing frame ", current)
                 ps = deepcopy(reference)
@@ -182,7 +173,9 @@ function mdl_execute(ps::ParseState)
                 c.func(ps, c.args...)
             end
 
-            ps.nframes > 1 && mdlsave(ps, joinpath(tmp, string(ps.basename, lpad(current, 4, 0), ".png")))
+            ps.nframes > 1 && mdlsave(ps, joinpath(tmp, string(ps.basename,
+                                                               lpad(string(current), 4, string(0)),
+                                                               ".png")))
         end
     end
 end
