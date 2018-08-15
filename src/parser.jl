@@ -17,7 +17,7 @@ mutable struct ParseState
 end
 ParseState() = ParseState("", 1, Vector{GCommand}(), [Matrix(1.0I, 4, 4)], IBuffer(), 1, Dict(), Matrix(1.0I, 4, 4))
 
-modifycoord!(ps::ParseState, trans::Matrix{Float64}) = push!(ps.coords, pop!(ps.coords) * trans)
+modifycoord!(ps::ParseState, trans::Union{Matrix{Float64},Diagonal{Float64}}) = ps.coords[end] *= trans
 
 withpm!(ps::ParseState, func, args...) = begin
     tmpp = Edges()

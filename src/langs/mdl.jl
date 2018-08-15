@@ -26,7 +26,7 @@ mdlmove(ps::ParseState, x::F64, y::F64, z::F64, knob = nothing) = begin
 end
 
 mdlscale(ps::ParseState, x::F64, y::F64, z::F64, knob = nothing) = begin
-    modifycoord!(ps, mkscale(knobworks(ps, knob, [x, y, z])))
+    modifycoord!(ps, mkscale(knobworks(ps, knob, [x, y, z, 1.0])))
 end
 
 mdlrotate(ps::ParseState, dir::Symbol, d::F64, knob = nothing) = begin
