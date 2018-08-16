@@ -168,8 +168,8 @@ function drawpm!(this::Edges, display::IBuffer, view::Vector{Float64},
         for lig in lights
             l[1:3] = lig[:location]
             vnl = dot(n, l)
-            di += lig[:color] .* reflect[:diffuse] * vnl
-            sp += lig[:color] .* reflect[:specular] * dot(v, 2n * vnl - l)^SPEC_EXP
+            di = di .+ lig[:color] .* reflect[:diffuse] * vnl
+            sp = sp .+ lig[:color] .* reflect[:specular] * dot(v, 2n * vnl - l)^SPEC_EXP
         end
         @. color[1:3] = min(255, max(0, am) + max(0, di) + max(0 + sp))
 
