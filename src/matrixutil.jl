@@ -1,7 +1,3 @@
-function mkscale(scalevec::Vector{Float64})
-    Diagonal(scalevec)
-end
-
 function mktranslate(transvec::Vector{Float64})
     mult = Matrix(1.0I, 4, 4)
     for i in 1:3

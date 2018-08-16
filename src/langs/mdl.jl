@@ -2,6 +2,7 @@ __precompile__(true)
 module mdl
 
 using Distributed: @distributed
+using LinearAlgebra: Diagonal, rmul!
 using Tokenize: Lexers.Lexer, untokenize
 using Tokenize.Tokens: kind, startpos, ENDMARKER, FLOAT, INTEGER
 using Render
@@ -26,7 +27,7 @@ mdlmove(ps::ParseState, x::F64, y::F64, z::F64, knob = nothing) = begin
 end
 
 mdlscale(ps::ParseState, x::F64, y::F64, z::F64, knob = nothing) = begin
-    modifycoord!(ps, mkscale(knobworks(ps, knob, [x, y, z, 1.0])))
+    rmul!(ps.coords[end], knobworks(ps, knob, [x, y, z, 1.0]) |> Diagonal)
 end
 
 mdlrotate(ps::ParseState, dir::Symbol, d::F64, knob = nothing) = begin
