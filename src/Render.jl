@@ -6,7 +6,6 @@ using FilePaths: AbstractPath
 using LinearAlgebra
 using Tokenize: tokenize, untokenize
 using Tokenize.Tokens: Token, kind, FLOAT, INTEGER
-using RoundingIntegers
 
 import Base: *, getindex, size
 
