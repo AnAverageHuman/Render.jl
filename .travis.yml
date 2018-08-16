@@ -1,0 +1,45 @@
+language: julia
+
+sudo: true
+
+os:
+  - linux
+  - osx
+
+julia:
+  - 0.7
+  - 1.0
+  - nightly
+
+notifications:
+  email: false
+
+git:
+  depth: 99999999
+
+branches:
+  except:
+    - travis-artifacts
+
+matrix:
+  fast_finish: true
+  allow_failures:
+  - julia: nightly
+
+script:
+  - julia -e 'using Pkg;
+              Pkg.activate(".");
+              Pkg.build("Render")'
+  - make
+
+before_deploy:
+  - if [ "${TRAVIS_OS_NAME}" == "osx" ]; then hdiutil unmount juliamnt; fi
+
+deploy:
+  provider: pages
+  skip-cleanup: true
+  github-token: $GITHUB_TOKEN
+  target-branch: travis-artifacts
+  on:
+    all_branches: true
+
